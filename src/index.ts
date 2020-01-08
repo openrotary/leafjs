@@ -8,39 +8,59 @@ export default class Leaf {
         }
     }
     appendRootNode(_data: any, fb?: any): object[] {
-        // 执行 before 钩子函数
-        const arr = this.elementList.concat()
-        console.log(arr)
+        // n: number = 3
+        // 默认向下添加
         const data = fb ? fb(_data) : _data
         const _index = this.elementList.filter((item: any) => !item._pid).length
         this.elementList.push({
-            _mid: getRandom(),
+            _mid: _data._mid || getRandom(),
             _index,
             ...data
         })
-        return this.elementList
+        return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendNode(mid: string, n: number, data: any): object[] {
         // 执行 before 钩子函数
         // log(data, '新元素')
+        const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
         if (n === 1) {
             // 在相对元素上方追加
+            if (!node._pid) {
+                // 优先处理根元素
+                this.elementList.forEach((item: any) => {
+                    if (!item._pid && item._index >= node._index) {
+                        console.log(item._index)
+                        item._index++
+                    }
+                })
+                this.elementList.push({
+                    ...data,
+                    _index: node._index - 1,
+                    _mid: data._mid || getRandom()
+                })
+                return this.elementList.map(({ children, ...item }: any) => item)
+            }
             // 查看有多少兄弟元素
-            const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
             this.elementList.forEach((item: any) => {
                 if (item._pid && item._pid === node._pid && item._index >= node._index) {
+                    // console.log(item._index)
                     item._index++
                 }
             })
             this.elementList.push({
                 ...data,
                 _pid: node._pid,
-                _index: node._index,
+                _index: node._index - 1,
                 _mid: data._mid || getRandom()
             })
         }
         if (n === 2) {
             // 在相对元素后追加
+            // 先判断是否是单标签
+            if (node.isSingle) {
+                console.warn('不允许在单标签后添加')
+                return this.elementList
+            }
             const _index = this.elementList.filter((item: any) => item._pid === mid).length
             this.elementList.push({
                 ...data,
@@ -51,8 +71,22 @@ export default class Leaf {
         }
         if (n === 3) {
             // 在相对元素下方追加
+            if (!node._pid) {
+                // 优先处理根元素
+                this.elementList.forEach((item: any) => {
+                    if (!item._pid && item._index >= node._index + 1) {
+                        console.log(item._index)
+                        item._index++
+                    }
+                })
+                this.elementList.push({
+                    ...data,
+                    _index: node._index + 1,
+                    _mid: data._mid || getRandom()
+                })
+                return this.elementList.map(({ children, ...item }: any) => item)
+            }
             // 查看有多少兄弟元素
-            const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
             this.elementList.forEach((item: any) => {
                 if (item._pid && item._pid === node._pid && item._index >= node._index + 1) {
                     item._index++
