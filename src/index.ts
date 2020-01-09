@@ -28,15 +28,15 @@ export default class Leaf {
         const arr = this.elementList.filter((item: any) => item._mid !== mid)
         console.log(arr)
         this.elementList = arr.map(({ _pid, ...item }: any) => {
-            console.log(item._pid)
-            if (item._pid && item._pid === node._mid) {
+            console.log(_pid)
+            if (_pid && _pid === node._mid) {
                 console.log('元素', item)
                 return {
                     _pid: node._pid,
                     ...item
                 }
             }
-            if (!item._pid) {
+            if (!_pid) {
                 console.log('根元素')
                 return { ...item }
             }
