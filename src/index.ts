@@ -2,10 +2,51 @@ import { getRandom, log } from './utils'
 
 export default class Leaf {
     elementList: object[] = []
+    bus: any
     constructor(data) {
+        this.bus = {}
         if (!data || !data.length) {
             this.elementList = []
         }
+    }
+    on(name: string, cb: any) {
+        if (!this.bus[name]) {
+            this.bus[name] = []
+        }
+        this.bus[name].push(cb)
+    }
+    emit(name: string, ...params: any) {
+        if (!this.bus[name]) {
+            this.bus[name] = []
+        }
+        this.bus[name].forEach(cb => {
+            cb(...params)
+        })
+    }
+    deleteNode(mid: string): object[] {
+        const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
+        const arr = this.elementList.filter((item: any) => item._mid !== mid)
+        console.log(arr)
+        this.elementList = arr.map(({ _pid, ...item }: any) => {
+            console.log(item._pid)
+            if (item._pid && item._pid === node._mid) {
+                console.log('元素', item)
+                return {
+                    _pid: node._pid,
+                    ...item
+                }
+            }
+            if (!item._pid) {
+                console.log('根元素')
+                return { ...item }
+            }
+            return {
+                _pid,
+                ...item
+            }
+        })
+        console.log(this.elementList)
+        return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendRootNode(_data: any, fb?: any): object[] {
         // n: number = 3
@@ -17,6 +58,7 @@ export default class Leaf {
             _index,
             ...data
         })
+        this.emit('success', '添加成功')
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendNode(mid: string, n: number, data: any): object[] {
@@ -58,7 +100,7 @@ export default class Leaf {
             // 在相对元素后追加
             // 先判断是否是单标签
             if (node.isSingle) {
-                console.warn('不允许在单标签后添加')
+                this.emit('warn', '不允许在单标签后添加元素')
                 return this.elementList
             }
             const _index = this.elementList.filter((item: any) => item._pid === mid).length
@@ -75,7 +117,6 @@ export default class Leaf {
                 // 优先处理根元素
                 this.elementList.forEach((item: any) => {
                     if (!item._pid && item._index >= node._index + 1) {
-                        console.log(item._index)
                         item._index++
                     }
                 })
@@ -99,6 +140,7 @@ export default class Leaf {
                 _mid: data._mid || getRandom()
             })
         }
+        this.emit('success', '添加成功')
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     static data2tree(data: any[]) {
