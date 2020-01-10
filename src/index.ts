@@ -23,47 +23,183 @@ export default class Leaf {
             cb(...params)
         })
     }
+    moveNode(mid: string, n: number, data: any): object[] {
+        // 移动元素
+        if (mid === data._mid) {
+            this.emit('error', '你为什么要移动自己？')
+            return this.elementList
+        }
+        const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
+        // const arr = this.elementList.filter((item: any) => item._mid !== mid)
+        // 先处理受影响的部分
+        // if (!data._pid) {
+        //     // 处理受影响的根元素
+        //     this.elementList.forEach((item: any) => {
+        //         if (!item._pid && item._index > data._index) {
+        //             item._index = data._index - 1
+        //         }
+        //     })
+        // } else {
+        //     this.elementList.forEach((item: any) => {
+        //         if (item._pid && item._pid === data._pid && item._index > data._index) {
+        //             item._index = data._index - 1
+        //         }
+        //     })
+        // }
+        if (n === 1) {
+            // 在相对元素上方追加
+            this.elementList.forEach((item: any) => {
+                if (item._pid === node._pid && item._index >= node._index) {
+                    item._index++
+                }
+            })
+            this.elementList.forEach((item: any) => {
+                if (item._mid === data._mid) {
+                    item._pid = node._pid || null
+                    item._index = node._index
+                }
+            })
+        }
+        if (n === 2) {
+            if (node.isSingle) {
+                this.emit('error', '不允许在单标签后添加元素')
+                return this.elementList
+            }
+            if (mid === data._pid) {
+                this.emit('error', `${data.tagName}已经是该元素的子元素`)
+                return this.elementList
+            }
+            const index = this.elementList.filter((item: any) => item._pid === mid).length
+            this.elementList.forEach((item: any) => {
+                if (item._mid === data._mid) {
+                    item._pid = mid
+                    item._index = index
+                }
+            })
+        }
+        if (n === 3) {
+            // 在相对元素上方追加
+            // this.elementList.forEach((item: any) => {
+            //     if (item._pid === node._pid && item._index > node._index) {
+            //         item._index++
+            //     }
+            // })
+            // this.elementList.forEach((item: any) => {
+            //     if (item._mid === data._mid) {
+            //         item._pid = node._pid || null
+            //         item._index = node._index
+            //     }
+            // })
+        }
+        return this.elementList.map(({ children, ...item }: any) => item)
+    }
     deleteNode(mid: string): object[] {
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
         const arr = this.elementList.filter((item: any) => item._mid !== mid)
-        console.log(arr)
-        this.elementList = arr.map(({ _pid, ...item }: any) => {
-            console.log(_pid)
-            if (_pid && _pid === node._mid) {
-                console.log('元素', item)
+        const childrenN = arr.filter((item: any) => item._pid === node._mid).length
+        if (!node._pid) {
+            // 优先处理根元素
+            this.elementList = arr.map(({ _pid, _index, ...item }: any) => {
+                if (_pid && _pid === node._mid) {
+                    // 处理子元素
+                    return {
+                        _index: _index + node._index,
+                        _pid: null,
+                        ...item
+                    }
+                }
+                if (!_pid && _index > node._index) {
+                    // 处理兄元素
+                    return {
+                        _index: _index + childrenN - 1,
+                        _pid: null,
+                        ...item
+                    }
+                }
+                // 处理无关元素
                 return {
-                    _pid: node._pid,
+                    _index,
+                    _pid,
                     ...item
                 }
-            }
-            if (!_pid) {
-                console.log('根元素')
-                return { ...item }
-            }
-            return {
-                _pid,
-                ...item
-            }
-        })
-        console.log(this.elementList)
+            })
+        } else {
+            this.elementList = arr.map(({ _pid, _index, ...item }: any) => {
+                if (_pid && _pid === node._mid) {
+                    // 处理子元素
+                    return {
+                        _index: _index + node._index,
+                        _pid: node._pid,
+                        ...item
+                    }
+                }
+                if (_pid && _pid === node._pid && _index > node._index) {
+                    // 处理兄元素
+                    return {
+                        _index: _index + childrenN - 1,
+                        _pid,
+                        ...item
+                    }
+                }
+                // 处理无关元素
+                return {
+                    _index,
+                    _pid,
+                    ...item
+                }
+            })
+        }
+        // console.log(this.elementList)
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendRootNode(_data: any, fb?: any): object[] {
         // n: number = 3
         // 默认向下添加
-        const data = fb ? fb(_data) : _data
         const _index = this.elementList.filter((item: any) => !item._pid).length
+        const data = fb ? fb(_data) : _data
+        if (data._pid === null) {
+            // 改变了根元素的顺序
+            this.elementList.forEach((item: any) => {
+                if (!item._pid && item._mid !== data._mid && item._index > data._index) {
+                    item._index--
+                }
+                if (item._mid === data._mid) {
+                    item._index = _index - 1
+                }
+            })
+            this.emit('success', '你移动了一个根元素')
+            return this.elementList.map(({ children, ...item }: any) => item)
+        }
+        if (data._mid) {
+            // 将普通元素升级为根元素
+            this.elementList.forEach((item: any) => {
+                if (item._pid === data._pid && item._index > data._index) {
+                    item._index--
+                }
+                if (item._mid === data._mid) {
+                    item._pid = null
+                    item._index = _index
+                }
+            })
+            this.emit('success', `你将${data.tagName}升级为根元素`)
+            return this.elementList.map(({ children, ...item }: any) => item)
+        }
         this.elementList.push({
-            _mid: _data._mid || getRandom(),
+            _pid: null,
+            _mid: data._mid || getRandom(),
             _index,
             ...data
         })
-        this.emit('success', '添加成功')
+        this.emit('success', '你添加了一个新的根元素')
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendNode(mid: string, n: number, data: any): object[] {
         // 执行 before 钩子函数
         // log(data, '新元素')
+        if (data._mid) {
+            // 处理移动元素的操作
+            return this.moveNode(mid, n, data)
+        }
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
         if (n === 1) {
             // 在相对元素上方追加
@@ -75,23 +211,18 @@ export default class Leaf {
                         item._index++
                     }
                 })
-                this.elementList.push({
-                    ...data,
-                    _index: node._index - 1,
-                    _mid: data._mid || getRandom()
+            } else {
+                // 查看有多少兄弟元素
+                this.elementList.forEach((item: any) => {
+                    if (item._pid && item._pid === node._pid && item._index >= node._index) {
+                        // console.log(item._index)
+                        item._index++
+                    }
                 })
-                return this.elementList.map(({ children, ...item }: any) => item)
             }
-            // 查看有多少兄弟元素
-            this.elementList.forEach((item: any) => {
-                if (item._pid && item._pid === node._pid && item._index >= node._index) {
-                    // console.log(item._index)
-                    item._index++
-                }
-            })
             this.elementList.push({
                 ...data,
-                _pid: node._pid,
+                _pid: node._pid || null,
                 _index: node._index - 1,
                 _mid: data._mid || getRandom()
             })
@@ -100,7 +231,7 @@ export default class Leaf {
             // 在相对元素后追加
             // 先判断是否是单标签
             if (node.isSingle) {
-                this.emit('warn', '不允许在单标签后添加元素')
+                this.emit('error', '不允许在单标签后添加元素')
                 return this.elementList
             }
             const _index = this.elementList.filter((item: any) => item._pid === mid).length
@@ -120,22 +251,17 @@ export default class Leaf {
                         item._index++
                     }
                 })
-                this.elementList.push({
-                    ...data,
-                    _index: node._index + 1,
-                    _mid: data._mid || getRandom()
+            } else {
+                // 查看有多少兄弟元素
+                this.elementList.forEach((item: any) => {
+                    if (item._pid && item._pid === node._pid && item._index >= node._index + 1) {
+                        item._index++
+                    }
                 })
-                return this.elementList.map(({ children, ...item }: any) => item)
             }
-            // 查看有多少兄弟元素
-            this.elementList.forEach((item: any) => {
-                if (item._pid && item._pid === node._pid && item._index >= node._index + 1) {
-                    item._index++
-                }
-            })
             this.elementList.push({
                 ...data,
-                _pid: node._pid,
+                _pid: node._pid || null,
                 _index: node._index + 1,
                 _mid: data._mid || getRandom()
             })
