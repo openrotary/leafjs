@@ -160,7 +160,7 @@ export default class Leaf {
         if (data._mid) {
             // 将普通元素升级为根元素
             this.elementList.forEach((item: any) => {
-                if (item._pid === data._pid && item._index > data._index) {
+                if (item._pid === data._pid && item._mid !== data._mid && item._index > data._index) {
                     item._index--
                 }
                 if (item._mid === data._mid) {
