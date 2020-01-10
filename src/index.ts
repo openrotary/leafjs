@@ -49,11 +49,9 @@ export default class Leaf {
         if (n === 1) {
             // 在相对元素上方追加
             this.elementList.forEach((item: any) => {
-                if (item._pid === node._pid && item._index >= node._index) {
+                if (item._pid === node._pid && item._mid !== data._mid && item._index >= node._index) {
                     item._index++
                 }
-            })
-            this.elementList.forEach((item: any) => {
                 if (item._mid === data._mid) {
                     item._pid = node._pid || null
                     item._index = node._index
@@ -78,18 +76,7 @@ export default class Leaf {
             })
         }
         if (n === 3) {
-            // 在相对元素上方追加
-            // this.elementList.forEach((item: any) => {
-            //     if (item._pid === node._pid && item._index > node._index) {
-            //         item._index++
-            //     }
-            // })
-            // this.elementList.forEach((item: any) => {
-            //     if (item._mid === data._mid) {
-            //         item._pid = node._pid || null
-            //         item._index = node._index
-            //     }
-            // })
+            // 在相对元素下方追加
         }
         return this.elementList.map(({ children, ...item }: any) => item)
     }
