@@ -30,21 +30,63 @@ export default class Leaf {
             return this.elementList
         }
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
-        // const arr = this.elementList.filter((item: any) => item._mid !== mid)
+        const cacheIndex = node._index
+        console.log(`相对元素是${cacheIndex}`)
         // 先处理受影响的部分
         if (n === 1) {
             // 在相对元素上方追加
-            // 区分同级移动还是跨级移动
+            // 区分同级移动还是跨树移动
             if (node._pid === data._pid) {
                 // 兄弟元素之间移动
+                // 判断前移还是后移，区别处理
+                if (data._index > cacheIndex) {
+                    // 前移
+                    this.elementList.forEach((item: any) => {
+                        if (item._mid === data._mid) {
+                            item._index = cacheIndex
+                        }
+                        if (
+                            item._pid === data._pid &&
+                            item._mid !== data._mid &&
+                            item._index >= cacheIndex &&
+                            item._index < data._index
+                        ) {
+                            item._index++
+                        }
+                    })
+                } else {
+                    // 后移
+                    this.elementList.forEach((item: any) => {
+                        if (item._mid === data._mid) {
+                            item._index = cacheIndex - 1
+                        }
+                        if (
+                            item._pid === data._pid &&
+                            item._mid !== data._mid &&
+                            item._index < cacheIndex &&
+                            item._index > data._index
+                        ) {
+                            item._index--
+                        }
+                    })
+                }
             } else {
-                // 跨级移动
+                // 跨树移动
                 this.elementList.forEach((item: any) => {
-                    if (item._pid === data._pid && item._index >= data._index) {
-                        item._index++
+                    // 找到兄弟元素，消除影响
+                    if (item._pid === data._pid && item._mid !== data._mid && item._index > data._index) {
+                        item._index--
                     }
+                    // 插入新元素
                     if (item._mid === data._mid) {
-                        item._index = node._index
+                        item._index = cacheIndex
+                        item._pid = node._pid
+                    }
+                })
+                this.elementList.forEach((item: any) => {
+                    // 添加新位置的影响
+                    if (item._pid === node._pid && item._mid !== data._mid && item._index >= cacheIndex) {
+                        item._index++
                     }
                 })
             }
@@ -85,6 +127,61 @@ export default class Leaf {
         }
         if (n === 3) {
             // 在相对元素下方追加
+            // 区分同级移动还是跨树移动
+            if (node._pid === data._pid) {
+                // 兄弟元素之间移动
+                // 判断前移还是后移，区别处理
+                if (data._index > cacheIndex) {
+                    // 前移
+                    this.elementList.forEach((item: any) => {
+                        if (item._mid === data._mid) {
+                            item._index = cacheIndex + 1
+                        }
+                        if (
+                            item._pid === data._pid &&
+                            item._mid !== data._mid &&
+                            item._index > cacheIndex &&
+                            item._index < data._index
+                        ) {
+                            item._index++
+                        }
+                    })
+                } else {
+                    // 后移
+                    this.elementList.forEach((item: any) => {
+                        if (item._mid === data._mid) {
+                            item._index = cacheIndex
+                        }
+                        if (
+                            item._pid === data._pid &&
+                            item._mid !== data._mid &&
+                            item._index <= cacheIndex &&
+                            item._index > data._index
+                        ) {
+                            item._index--
+                        }
+                    })
+                }
+            } else {
+                // 跨树移动
+                this.elementList.forEach((item: any) => {
+                    // 找到兄弟元素，消除影响
+                    if (item._pid === data._pid && item._mid !== data._mid && item._index > data._index) {
+                        item._index--
+                    }
+                    // 插入新元素
+                    if (item._mid === data._mid) {
+                        item._index = cacheIndex + 1
+                        item._pid = node._pid
+                    }
+                })
+                this.elementList.forEach((item: any) => {
+                    // 添加新位置的影响
+                    if (item._pid === node._pid && item._mid !== data._mid && item._index > cacheIndex) {
+                        item._index++
+                    }
+                })
+            }
         }
         return this.elementList.map(({ children, ...item }: any) => item)
     }
