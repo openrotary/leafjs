@@ -32,31 +32,22 @@ export default class Leaf {
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
         // const arr = this.elementList.filter((item: any) => item._mid !== mid)
         // 先处理受影响的部分
-        // if (!data._pid) {
-        //     // 处理受影响的根元素
-        //     this.elementList.forEach((item: any) => {
-        //         if (!item._pid && item._index > data._index) {
-        //             item._index = data._index - 1
-        //         }
-        //     })
-        // } else {
-        //     this.elementList.forEach((item: any) => {
-        //         if (item._pid && item._pid === data._pid && item._index > data._index) {
-        //             item._index = data._index - 1
-        //         }
-        //     })
-        // }
         if (n === 1) {
             // 在相对元素上方追加
-            this.elementList.forEach((item: any) => {
-                if (item._pid === node._pid && item._mid !== data._mid && item._index >= node._index) {
-                    item._index++
-                }
-                if (item._mid === data._mid) {
-                    item._pid = node._pid || null
-                    item._index = node._index
-                }
-            })
+            // 区分同级移动还是跨级移动
+            if (node._pid === data._pid) {
+                // 兄弟元素之间移动
+            } else {
+                // 跨级移动
+                this.elementList.forEach((item: any) => {
+                    if (item._pid === data._pid && item._index >= data._index) {
+                        item._index++
+                    }
+                    if (item._mid === data._mid) {
+                        item._index = node._index
+                    }
+                })
+            }
         }
         if (n === 2) {
             if (node.isSingle) {
@@ -68,12 +59,29 @@ export default class Leaf {
                 return this.elementList
             }
             const index = this.elementList.filter((item: any) => item._pid === mid).length
-            this.elementList.forEach((item: any) => {
-                if (item._mid === data._mid) {
-                    item._pid = mid
-                    item._index = index
-                }
-            })
+            if (!data._pid) {
+                // 将根元素移动到某元素后面
+                this.elementList.forEach((item: any) => {
+                    if (!item._pid && item._index > data._index) {
+                        item._index--
+                    }
+                    if (item._mid === data._mid) {
+                        item._pid = mid
+                        item._index = index
+                    }
+                })
+            } else {
+                // 将普通元素移动到某元素后面
+                this.elementList.forEach((item: any) => {
+                    if (item._pid === data._pid && item._index > data._index) {
+                        item._index--
+                    }
+                    if (item._mid === data._mid) {
+                        item._pid = mid
+                        item._index = index
+                    }
+                })
+            }
         }
         if (n === 3) {
             // 在相对元素下方追加
