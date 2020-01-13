@@ -1,4 +1,4 @@
-import { getRandom, log } from './utils'
+import { getRandom, getPidList, log } from './utils'
 
 export default class Leaf {
     elementList: object[] = []
@@ -26,18 +26,24 @@ export default class Leaf {
     moveNode(mid: string, n: number, data: any): object[] {
         // 移动元素
         if (mid === data._mid) {
-            this.emit('error', '你为什么要移动自己？')
+            this.emit('error', '你为什么要移动自己？(101)')
             return this.elementList
         }
+        // 判断是否是将父元素移动到子元素下
+        // 查询出所有父节点的mid
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
+        const pidList: string[] = getPidList(this.elementList, node._pid)
+        if (pidList.includes(data._mid)) {
+            this.emit('error', '不允许骚操作！(102)')
+            return this.elementList
+        }
         const cacheIndex = node._index
-        console.log(`相对元素是${cacheIndex}`)
+        // console.log(`相对元素是${cacheIndex}`)
         // 先处理受影响的部分
         if (n === 1) {
             // 在相对元素上方追加
-            // 区分同级移动还是跨树移动
+            // node._pid === data._pid 区分同级移动还是跨树移动
             if (node._pid === data._pid) {
-                // 兄弟元素之间移动
                 // 判断前移还是后移，区别处理
                 if (data._index > cacheIndex) {
                     // 前移
@@ -93,11 +99,11 @@ export default class Leaf {
         }
         if (n === 2) {
             if (node.isSingle) {
-                this.emit('error', '不允许在单标签后添加元素')
+                this.emit('error', '不允许在单标签后添加元素 (103)')
                 return this.elementList
             }
             if (mid === data._pid) {
-                this.emit('error', `${data.tagName}已经是该元素的子元素`)
+                this.emit('error', `${data.tagName}已经是该元素的子元素 (104)`)
                 return this.elementList
             }
             const index = this.elementList.filter((item: any) => item._pid === mid).length
@@ -241,11 +247,9 @@ export default class Leaf {
                 }
             })
         }
-        // console.log(this.elementList)
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendRootNode(_data: any, fb?: any): object[] {
-        // n: number = 3
         // 默认向下添加
         const _index = this.elementList.filter((item: any) => !item._pid).length
         const data = fb ? fb(_data) : _data
@@ -323,7 +327,7 @@ export default class Leaf {
             // 在相对元素后追加
             // 先判断是否是单标签
             if (node.isSingle) {
-                this.emit('error', '不允许在单标签后添加元素')
+                this.emit('error', '不允许在单标签后添加元素 (103)')
                 return this.elementList
             }
             const _index = this.elementList.filter((item: any) => item._pid === mid).length

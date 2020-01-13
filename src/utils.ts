@@ -15,3 +15,18 @@ export const log = (data, msg = '打印') => {
         data
     )
 }
+
+export const getPidList = (_arr, _pid) => {
+    const arr = _arr.concat()
+    let pid = _pid
+    const pidList = []
+    while (pid) {
+        arr.forEach(item => {
+            if (item._mid === pid) {
+                pidList.push(item._mid)
+                pid = item._pid
+            }
+        })
+    }
+    return pidList
+}
