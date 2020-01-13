@@ -2,6 +2,7 @@ import { getRandom, getPidList, log } from './utils'
 
 export default class Leaf {
     elementList: object[] = []
+    activeMid: string = null
     bus: any
     constructor(data) {
         this.bus = {}
@@ -22,6 +23,9 @@ export default class Leaf {
         this.bus[name].forEach(cb => {
             cb(...params)
         })
+    }
+    getActiveMid() {
+        return this.activeMid
     }
     moveNode(mid: string, n: number, data: any): object[] {
         // 移动元素
@@ -263,6 +267,7 @@ export default class Leaf {
                     item._index = _index - 1
                 }
             })
+            this.activeMid = data._mid
             this.emit('success', '你移动了一个根元素')
             return this.elementList.map(({ children, ...item }: any) => item)
         }
@@ -277,23 +282,28 @@ export default class Leaf {
                     item._index = _index
                 }
             })
+            this.activeMid = data._mid
             this.emit('success', `你将${data.tagName}升级为根元素`)
             return this.elementList.map(({ children, ...item }: any) => item)
         }
+        const _mid = data._mid || getRandom()
         this.elementList.push({
             _pid: null,
-            _mid: data._mid || getRandom(),
+            _mid,
             _index,
             ...data
         })
+        this.activeMid = _mid
         this.emit('success', '你添加了一个新的根元素')
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     appendNode(mid: string, n: number, data: any): object[] {
         // 执行 before 钩子函数
         // log(data, '新元素')
+
         if (data._mid) {
             // 处理移动元素的操作
+            this.activeMid = data._mid
             return this.moveNode(mid, n, data)
         }
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
@@ -316,11 +326,13 @@ export default class Leaf {
                     }
                 })
             }
+            const _mid = data._mid || getRandom()
+            this.activeMid = _mid
             this.elementList.push({
                 ...data,
                 _pid: node._pid || null,
                 _index: node._index - 1,
-                _mid: data._mid || getRandom()
+                _mid
             })
         }
         if (n === 2) {
@@ -331,11 +343,13 @@ export default class Leaf {
                 return this.elementList
             }
             const _index = this.elementList.filter((item: any) => item._pid === mid).length
+            const _mid = data._mid || getRandom()
+            this.activeMid = _mid
             this.elementList.push({
                 ...data,
                 _pid: mid,
                 _index,
-                _mid: data._mid || getRandom()
+                _mid
             })
         }
         if (n === 3) {
@@ -355,11 +369,13 @@ export default class Leaf {
                     }
                 })
             }
+            const _mid = data._mid || getRandom()
+            this.activeMid = _mid
             this.elementList.push({
                 ...data,
                 _pid: node._pid || null,
                 _index: node._index + 1,
-                _mid: data._mid || getRandom()
+                _mid
             })
         }
         this.emit('success', '添加成功')
