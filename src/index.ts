@@ -27,6 +27,11 @@ export default class Leaf {
     getActiveMid() {
         return this.activeMid
     }
+    search(mid: string): string | null {
+        const [res]: any[] = this.elementList.filter((item: any) => item._mid === mid)
+        !res && this.emit('warn', '没有搜索到结果 (110)')
+        return res || null
+    }
     moveNode(mid: string, n: number, data: any): object[] {
         // 移动元素
         if (mid === data._mid) {
@@ -291,6 +296,7 @@ export default class Leaf {
             _pid: null,
             _mid,
             _index,
+            class: [_mid.slice(-5)],
             ...data
         })
         this.activeMid = _mid
@@ -332,7 +338,8 @@ export default class Leaf {
                 ...data,
                 _pid: node._pid || null,
                 _index: node._index - 1,
-                _mid
+                _mid,
+                class: [_mid.slice(-5)]
             })
         }
         if (n === 2) {
@@ -349,7 +356,8 @@ export default class Leaf {
                 ...data,
                 _pid: mid,
                 _index,
-                _mid
+                _mid,
+                class: [_mid.slice(-5)]
             })
         }
         if (n === 3) {
@@ -375,7 +383,8 @@ export default class Leaf {
                 ...data,
                 _pid: node._pid || null,
                 _index: node._index + 1,
-                _mid
+                _mid,
+                class: [_mid.slice(-5)]
             })
         }
         this.emit('success', '添加成功')
