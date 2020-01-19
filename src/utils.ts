@@ -15,6 +15,14 @@ export const log = (data, msg = '打印') => {
         data
     )
 }
+export const removePropertyOfNull = (obj: any): any => {
+    Object.keys(obj).forEach(item => {
+        if (!obj[item]) {
+            delete obj[item]
+        }
+    })
+    return obj
+}
 
 export const getPidList = (_arr, _pid) => {
     const arr = _arr.concat()

@@ -1,4 +1,4 @@
-import { getRandom, getPidList, log } from './utils'
+import { getRandom, getPidList, removePropertyOfNull, log } from './utils'
 
 export default class Leaf {
     elementList: object[] = []
@@ -198,6 +198,17 @@ export default class Leaf {
                 })
             }
         }
+        return this.elementList.map(({ children, ...item }: any) => item)
+    }
+    updateElement(mid: string, _data: any): object[] {
+        const arr = JSON.parse(JSON.stringify(this.elementList))
+        arr.forEach((item: any) => {
+            if (item._mid === mid) {
+                const css = removePropertyOfNull(_data.css)
+                item.css = Object.assign(item.css || {}, css)
+            }
+        })
+        this.elementList = arr
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     deleteNode(mid: string): object[] {
