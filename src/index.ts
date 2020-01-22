@@ -441,4 +441,33 @@ export default class Leaf {
             children: array2Tree(data, _mid).sort((a, b) => a._index - b._index)
         }))
     }
+    static tree2DOM(data): string {
+        const renderAttr = attr => {
+            if (!attr) {
+                return ''
+            }
+            const keys = Object.keys(attr)
+            const res = keys.map(key => (attr[key] ? `${key}="${attr[key]}"` : `${key}`)).join(' ')
+            return keys.length ? ` ${res}` : ''
+        }
+        const AST2HTML = ast => {
+            if (!ast || !ast.length) {
+                return ''
+            }
+            return ast
+                .map(ele => {
+                    if (ele.type === 1) {
+                        return ele.content
+                    }
+                    if (ele.isSingle) {
+                        return `<${ele.tagName} :class="${ele.class}" ${renderAttr(ele.attr)} />\n`
+                    }
+                    return `\n<${ele.tagName} :class="${ele.class}" ${renderAttr(ele.attr)}>${AST2HTML(
+                        ele.children
+                    )}</${ele.tagName}> `
+                })
+                .join('')
+        }
+        return AST2HTML(data)
+    }
 }
