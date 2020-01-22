@@ -450,6 +450,9 @@ export default class Leaf {
             const res = keys.map(key => (attr[key] ? `${key}="${attr[key]}"` : `${key}`)).join(' ')
             return keys.length ? ` ${res}` : ''
         }
+        const renderClass = list => {
+            return list.map((item: any) => (item.includes(':') ? `'${item}'` : `{${item}}`)).join(',')
+        }
         const AST2HTML = ast => {
             if (!ast || !ast.length) {
                 return ''
@@ -460,9 +463,9 @@ export default class Leaf {
                         return ele.content
                     }
                     if (ele.isSingle) {
-                        return `<${ele.tagName} :class="${ele.class}" ${renderAttr(ele.attr)} />\n`
+                        return `<${ele.tagName} :class="[${renderClass(ele.class)}]" ${renderAttr(ele.attr)} />\n`
                     }
-                    return `\n<${ele.tagName} :class="${ele.class}" ${renderAttr(ele.attr)}>${AST2HTML(
+                    return `\n<${ele.tagName} :class="[${renderClass(ele.class)}]" ${renderAttr(ele.attr)}>${AST2HTML(
                         ele.children
                     )}</${ele.tagName}> `
                 })
