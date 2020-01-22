@@ -206,7 +206,7 @@ export default class Leaf {
         }
         this.emit('change', this.getElementList())
     }
-    updateElement(mid: string, _data: any): object[] {
+    updateElement(mid: string, _data: any): void {
         const arr = JSON.parse(JSON.stringify(this.elementList))
         arr.forEach((item: any) => {
             if (item._mid === mid) {
@@ -217,7 +217,7 @@ export default class Leaf {
         this.elementList = arr
         this.emit('change', this.getElementList())
     }
-    deleteNode(mid: string): object[] {
+    deleteNode(mid: string): void {
         const [node]: any[] = this.elementList.filter((item: any) => item._mid === mid)
         const arr = this.elementList.filter((item: any) => item._mid !== mid)
         const childrenN = arr.filter((item: any) => item._pid === node._mid).length
@@ -317,6 +317,7 @@ export default class Leaf {
             _mid,
             _index,
             class: [_mid.slice(-5)],
+            attr: [],
             ...data
         })
         this.activeMid = _mid
@@ -359,7 +360,8 @@ export default class Leaf {
                 _pid: node._pid || null,
                 _index: node._index - 1,
                 _mid,
-                class: [_mid.slice(-5)]
+                class: [_mid.slice(-5)],
+                attr: []
             })
         }
         if (n === 2) {
@@ -377,7 +379,8 @@ export default class Leaf {
                 _pid: mid,
                 _index,
                 _mid,
-                class: [_mid.slice(-5)]
+                class: [_mid.slice(-5)],
+                attr: []
             })
         }
         if (n === 3) {
@@ -404,6 +407,7 @@ export default class Leaf {
                 _pid: node._pid || null,
                 _index: node._index + 1,
                 _mid,
+                attr: [],
                 class: [_mid.slice(-5)]
             })
         }
