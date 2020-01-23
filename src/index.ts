@@ -435,14 +435,13 @@ export default class Leaf {
         }))
     }
     static tree2DOM(data): string {
-        const renderAttr = attr => {
-            if (!attr) {
-                return ''
-            }
-            const keys = Object.keys(attr)
-            const res = keys.map(key => (attr[key] ? `${key}="${attr[key]}"` : `${key}`)).join(' ')
-            return keys.length ? ` ${res}` : ''
-        }
+        const renderAttr = attr =>
+            attr
+                .map(item => {
+                    const [value] = Object.entries(item)
+                    return `${value[0]}="${value[1]}"`
+                })
+                .join(' ')
         const renderClass = list => {
             return list
                 .map((item: any) => {
