@@ -206,15 +206,14 @@ export default class Leaf {
         }
         this.emit('change', this.getElementList())
     }
-    updateElement(mid: string, _data: any): void {
-        const arr = JSON.parse(JSON.stringify(this.elementList))
-        arr.forEach((item: any) => {
+    updateElement(mid: string, data: any): void {
+        const arr = this.elementList.concat()
+        this.elementList = arr.map((item: any) => {
             if (item._mid === mid) {
-                const css = removePropertyOfNull(_data.css)
-                item.css = Object.assign(item.css || {}, css)
+                return JSON.parse(JSON.stringify(data))
             }
+            return item
         })
-        this.elementList = arr
         this.emit('change', this.getElementList())
     }
     deleteNode(mid: string): void {
@@ -275,11 +274,9 @@ export default class Leaf {
         }
         this.emit('change', this.getElementList())
     }
-    appendRootNode(_data: any, fb?: any): object[] {
+    appendRootNode(data: any, fb?: any): object[] {
         // 默认向下添加
-
         const _index = this.elementList.filter((item: any) => !item._pid).length
-        const data = fb ? fb(_data) : _data
         if (data._pid === null) {
             // 改变了根元素的顺序
             this.elementList.forEach((item: any) => {
@@ -311,20 +308,19 @@ export default class Leaf {
             this.emit('change', this.getElementList())
             return
         }
+        // 添加新元素
         const _mid = data._mid || getRandom()
+        const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
         this.elementList.push({
             _pid: null,
-            _mid,
             _index,
-            class: [_mid.slice(-5)],
-            attr: [],
-            ...data
+            ...newElement
         })
         this.activeMid = _mid
         this.emit('success', '你添加了一个新的根元素')
         this.emit('change', this.getElementList())
     }
-    appendNode(mid: string, n: number, data: any): object[] {
+    appendNode(mid: string, n: number, data: any, fb?: any): object[] {
         // 执行 before 钩子函数
         // log(data, '新元素')
 
@@ -340,7 +336,6 @@ export default class Leaf {
                 // 优先处理根元素
                 this.elementList.forEach((item: any) => {
                     if (!item._pid && item._index >= node._index) {
-                        console.log(item._index)
                         item._index++
                     }
                 })
@@ -355,13 +350,11 @@ export default class Leaf {
             }
             const _mid = data._mid || getRandom()
             this.activeMid = _mid
+            const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
             this.elementList.push({
-                ...data,
+                ...newElement,
                 _pid: node._pid || null,
-                _index: node._index - 1,
-                _mid,
-                class: [_mid.slice(-5)],
-                attr: []
+                _index: node._index - 1
             })
         }
         if (n === 2) {
@@ -374,13 +367,11 @@ export default class Leaf {
             const _index = this.elementList.filter((item: any) => item._pid === mid).length
             const _mid = data._mid || getRandom()
             this.activeMid = _mid
+            const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
             this.elementList.push({
-                ...data,
+                ...newElement,
                 _pid: mid,
-                _index,
-                _mid,
-                class: [_mid.slice(-5)],
-                attr: []
+                _index
             })
         }
         if (n === 3) {
@@ -402,13 +393,11 @@ export default class Leaf {
             }
             const _mid = data._mid || getRandom()
             this.activeMid = _mid
+            const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
             this.elementList.push({
-                ...data,
+                ...newElement,
                 _pid: node._pid || null,
-                _index: node._index + 1,
-                _mid,
-                attr: [],
-                class: [_mid.slice(-5)]
+                _index: node._index + 1
             })
         }
         this.emit('success', '添加成功')
