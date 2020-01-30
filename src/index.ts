@@ -274,56 +274,9 @@ export default class Leaf {
         }
         this.emit('change', this.getElementList())
     }
-    appendRootNode(data: any, fb?: any): object[] {
-        // 默认向下添加
-        const _index = this.elementList.filter((item: any) => !item._pid).length
-        if (data._pid === null) {
-            // 改变了根元素的顺序
-            this.elementList.forEach((item: any) => {
-                if (!item._pid && item._mid !== data._mid && item._index > data._index) {
-                    item._index--
-                }
-                if (item._mid === data._mid) {
-                    item._index = _index - 1
-                }
-            })
-            this.activeMid = data._mid
-            this.emit('success', '你移动了一个根元素')
-            this.emit('change', this.getElementList())
-            return
-        }
-        if (data._mid) {
-            // 将普通元素升级为根元素
-            this.elementList.forEach((item: any) => {
-                if (item._pid === data._pid && item._mid !== data._mid && item._index > data._index) {
-                    item._index--
-                }
-                if (item._mid === data._mid) {
-                    item._pid = null
-                    item._index = _index
-                }
-            })
-            this.activeMid = data._mid
-            this.emit('success', `你将${data.tagName}升级为根元素`)
-            this.emit('change', this.getElementList())
-            return
-        }
-        // 添加新元素
-        const _mid = data._mid || getRandom()
-        const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
-        this.elementList.push({
-            _pid: null,
-            _index,
-            ...newElement
-        })
-        this.activeMid = _mid
-        this.emit('success', '你添加了一个新的根元素')
-        this.emit('change', this.getElementList())
-    }
     appendNode(mid: string, n: number, data: any, fb?: any): object[] {
         // 执行 before 钩子函数
         // log(data, '新元素')
-
         if (data._mid) {
             // 处理移动元素的操作
             this.activeMid = data._mid
@@ -403,6 +356,52 @@ export default class Leaf {
         this.emit('success', '添加成功')
         this.emit('change', this.getElementList())
     }
+    appendRootNode(data: any, fb?: any): object[] {
+        // 默认向下添加
+        const _index = this.elementList.filter((item: any) => !item._pid).length
+        if (data._pid === null) {
+            // 改变了根元素的顺序
+            this.elementList.forEach((item: any) => {
+                if (!item._pid && item._mid !== data._mid && item._index > data._index) {
+                    item._index--
+                }
+                if (item._mid === data._mid) {
+                    item._index = _index - 1
+                }
+            })
+            this.activeMid = data._mid
+            this.emit('success', '你移动了一个根元素')
+            this.emit('change', this.getElementList())
+            return
+        }
+        if (data._mid) {
+            // 将普通元素升级为根元素
+            this.elementList.forEach((item: any) => {
+                if (item._pid === data._pid && item._mid !== data._mid && item._index > data._index) {
+                    item._index--
+                }
+                if (item._mid === data._mid) {
+                    item._pid = null
+                    item._index = _index
+                }
+            })
+            this.activeMid = data._mid
+            this.emit('success', `你将${data.tagName}升级为根元素`)
+            this.emit('change', this.getElementList())
+            return
+        }
+        // 添加新元素
+        const _mid = data._mid || getRandom()
+        const newElement = fb ? fb({ _mid, ...data }) : { _mid, ...data }
+        this.elementList.push({
+            _pid: null,
+            _index,
+            ...newElement
+        })
+        this.activeMid = _mid
+        this.emit('success', '你添加了一个新的根元素')
+        this.emit('change', this.getElementList())
+    }
     static data2tree(data: any[]) {
         // 二维数组转树形结构
         // 没有pid的是第一层元素
@@ -435,10 +434,11 @@ export default class Leaf {
         }))
     }
     static tree2DOM(data): string {
-        const renderAttr = attr =>
-            attr
+        const renderAttr = list =>
+            list
                 .map(item => {
                     const [value] = Object.entries(item)
+                    console.log('kllk', value)
                     return `${value[0]}="${value[1]}"`
                 })
                 .join(' ')
