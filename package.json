@@ -1,7 +1,8 @@
 {
-    "name": "leaf-js",
-    "version": "1.0.0",
+    "name": "@openrotary/leafjs",
+    "version": "1.0.1",
     "main": "dist/bundle.es.js",
+    "module": "dist/bundle.cjs.js",
     "license": "MIT",
     "scripts": {
         "dev": "rollup -c -w",
