@@ -26,10 +26,10 @@ export default class Leaf {
             cb(...params)
         })
     }
-    getActiveMid() {
+    getActiveMid(): string {
         return this.activeMid
     }
-    getElementList() {
+    getElementList(): object[] {
         return this.elementList.map(({ children, ...item }: any) => item)
     }
     search(mid: string): string | null {
@@ -274,7 +274,7 @@ export default class Leaf {
         }
         this.emit('change', this.getElementList())
     }
-    appendNode(mid: string, n: number, data: any, fb?: any): object[] {
+    appendNode(mid: string, n: number, data: any, fb?: Function): Array<object> {
         // 执行 before 钩子函数
         // log(data, '新元素')
         if (data._mid) {
@@ -356,7 +356,7 @@ export default class Leaf {
         this.emit('success', '添加成功')
         this.emit('change', this.getElementList())
     }
-    appendRootNode(data: any, fb?: any): object[] {
+    appendRootNode(data: any, fb?: Function): object[] {
         // 默认向下添加
         const _index = this.elementList.filter((item: any) => !item._pid).length
         if (data._pid === null) {
