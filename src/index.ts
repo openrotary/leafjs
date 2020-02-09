@@ -438,7 +438,6 @@ export default class Leaf {
             list
                 .map(item => {
                     const [value] = Object.entries(item)
-                    console.log('kllk', value)
                     return `${value[0]}="${value[1]}"`
                 })
                 .join(' ')
@@ -446,9 +445,9 @@ export default class Leaf {
             return list
                 .map((item: any) => {
                     if (item.includes(':')) {
-                        return `{${item}}`
+                        return `{ ${item.trim()} }`
                     }
-                    return !item.indexOf('$') ? `${item}` : `'${item.slice(1)}'`
+                    return !item.indexOf('$') ? `${item.slice(1)}` : `'${item}'`
                 })
                 .join(',')
         }
