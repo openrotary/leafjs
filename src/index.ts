@@ -484,7 +484,7 @@ export default class Leaf {
       list
         .map(item => {
           const [value] = Object.entries(item);
-          return `${value[0]}="${value[1]}"`;
+          return value[1] == null ? `${value[0]}` : `${value[0]}="${value[1]}"`;
         })
         .join(" ");
     const renderClass = list => {
@@ -508,9 +508,9 @@ export default class Leaf {
       return ast
         .map(ele => {
           if (ele.isSingle) {
-            return `<${ele.tagName} :class="[${renderClass(
-              ele.class
-            )}]" ${renderAttr(ele.attr)} />\n`;
+            return `<${ele.tagName} ${renderClass(ele.class)} ${renderAttr(
+              ele.attr
+            )} />\n`;
           }
           return `\n<${ele.tagName} ${renderClass(ele.class)} ${renderAttr(
             ele.attr
@@ -530,21 +530,18 @@ export default class Leaf {
       }
       return res;
     };
-    const deepRenderCss = (data, other?: string) => {
+    const deepRenderCss = (data: any[], other?: string) => {
       if (!data.length) {
         return "";
       }
       return data
-        .map(({ select, cssom, children }) => {
-          if (!cssom || !select) {
-            return "";
-          }
-          return `${select} {
+        .map(
+          ({ select, cssom, children }) => `${select} {
                 ${renderCss(cssom)}
                     ${children ? deepRenderCss(children) : ""}
                     ${other || ""}
-                }`;
-        })
+                }`
+        )
         .join("\n");
     };
     const AST2CSS = ast => {
@@ -553,10 +550,16 @@ export default class Leaf {
       }
       return ast
         .map(ele => {
-          if (!ele.css || !ele.css.length) {
-            return "";
+          if (ele.css.length && ele.children) {
+            return deepRenderCss(
+              Leaf.data2tree(ele.css),
+              AST2CSS(ele.children)
+            );
           }
-          return deepRenderCss(Leaf.data2tree(ele.css), AST2CSS(ele.children));
+          if (!ele.css.length && ele.children) {
+            return AST2CSS(ele.children);
+          }
+          return "";
         })
         .join("\n");
     };
