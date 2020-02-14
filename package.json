@@ -1,6 +1,6 @@
 {
     "name": "@openrotary/leafjs",
-    "version": "1.0.10",
+    "version": "1.0.11",
     "main": "dist/bundle.cjs.js",
     "module": "dist/bundle.es.js",
     "license": "MIT",
