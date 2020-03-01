@@ -444,6 +444,45 @@ export default class Leaf {
     this.emit("success", "你添加了一个新的根元素");
     this.emit("change", this.getElementList());
   }
+  getChildrenTree(mid: string): any[] {
+    const [el]: any[] = this.elementList.filter(
+      (item: any) => item._mid === mid
+    );
+    if (!el) {
+      return [];
+    }
+    el._index = 0;
+    const resList = [el];
+    const midHash = new Map().set(mid, getRandom());
+
+    const extractList = (pid: string, list: any[]) => {
+      const arr = list.filter((item: any) => item._pid === pid);
+      if (!arr.length) {
+        return;
+      }
+      arr.forEach(({ _mid, ...item }: any) => {
+        const newMid = getRandom();
+        !midHash.get(_mid) && midHash.set(_mid, newMid);
+        resList.push({ _mid, ...item });
+        extractList(_mid, list);
+      });
+    };
+    extractList(
+      mid,
+      this.elementList.map(({ children, ...item }: any) => ({ ...item }))
+    );
+    // 将pid替换，保留父子关系
+    return resList.map(({ _pid, _mid, ...item }: any) => ({
+      _pid: midHash.get(_pid) || null,
+      _mid: midHash.get(_mid),
+      ...item
+    }));
+  }
+  addNewTree(mid: string, tree: any[]): void {
+    this.elementList = this.elementList.concat(tree);
+    const [data] = tree.filter(item => !item._pid);
+    this.appendNode(mid, 2, data);
+  }
   static data2tree(data: any[]) {
     // 二维数组转树形结构
     // 没有pid的是第一层元素
@@ -512,11 +551,13 @@ export default class Leaf {
               ele.attr
             )} />\n`;
           }
-          return `\n<${ele.tagName} ${renderClass(ele.class)} ${renderAttr(
-            ele.attr
-          )}>${ele.content ? ele.content : AST2HTML(ele.children)}</${
-            ele.tagName
-          }> `;
+          return ele.tagName.trim()
+            ? `\n<${ele.tagName} ${renderClass(ele.class)} ${renderAttr(
+                ele.attr
+              )}>${ele.content ? ele.content : AST2HTML(ele.children)}</${
+                ele.tagName
+              }>\n`
+            : "";
         })
         .join("");
     };
